@@ -1,0 +1,20 @@
+#!/bin/bash
+
+#function to grab user info based on their name
+#example: wilcox_we would be the input
+#	  and the output would be as follows
+#	  to the console
+#   USERID               NAME                  PHONE       TTY       WHAT
+get_this_user_info () {
+ echo Name:  $1
+}
+
+echo -e "  USERID			NAME			PHONE		TTY		WHAT"
+
+
+if [ $# -eq 0 ];
+then  
+  currentUser="$USER"
+  echo -e "you are: $currentUser"
+  get_this_user_info $currentUser
+fi
