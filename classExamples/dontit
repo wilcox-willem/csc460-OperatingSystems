@@ -1,0 +1,10 @@
+#!/bin/bash
+list=`ps -ef | grep allen_b | grep doit | tr -s " " | cut -d" " -f2`
+echo $list
+
+for x in $list
+do
+echo $x
+kill -9 $x
+done
+
