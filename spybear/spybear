@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# WILLEM WILCOX, DR. B. ALLEN, MU, CSC460, 1/20/24
+# Have you ever checked out "modarchive.org"? It is an archive of MOD music and chiptunes intended for the commodore amiga. It even has a built in player, super nifty to explore!
+
 #function to grab user info based on their name
 #example: wilcox_we would be the input
 #	  and the output would be as follows
@@ -38,6 +41,10 @@ get_user_info() {
 # prints titles for info
 printf "%-20s%-25s%-15s%-8s%-s\n" "USERID" "NAME" "PHONE" "TTY" "WHAT"
 
+# where the fun begins
+# three if statements to handle calling w/ or w/o cmd args
+
+# "spybear" grabs current user
 if [ $# -eq 0 ];
 then
 	currentUser="$USER"
@@ -46,17 +53,21 @@ then
 	# echo "TESTING NOW"
 	# grep BIGBADBEARS24 /etc/passwd | cut -d":" -f5
 
+# "spybear all" grabs all users in BIGBADBEARS24 class
 elif [ "$1" == "all" ];
 then
 	class_ids=`grep BIGBADBEARS24 /etc/passwd | cut -d":" -f1`
 	for x in $class_ids
 	do
-		get_user_info $x
+		get_user_info "$x"
 	done
+
+# "spybear user+" grabs specified users in order called
 elif [ $# -gt 0 ];
 then
-	for x in $#
+	for x in $*;
 	do
-		get_user_info $x
+		shift
+		get_user_info "$x"
 	done
 fi
