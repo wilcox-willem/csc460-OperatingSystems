@@ -1,0 +1,73 @@
+#!/bin/bash
+
+# WILLEM WILCOX, DR. B. ALLEN, MU, CSC460, 1/20/24
+# Have you ever checked out "modarchive.org"? It is an archive of MOD music and chiptunes intended for the commodore amiga. It even has a built in player, super nifty to explore!
+
+#function to grab user info based on their name
+#example: wilcox_we would be the input
+#	  and the output would be as follows
+#	  to the console
+#   USERID               NAME                  PHONE       TTY       WHAT
+
+get_user_info() {
+    username="$1"
+
+    user_info=$(getent passwd "$username")
+    if [ -n "$user_info" ]; then
+        user_id=$(echo "$user_info" | cut -d: -f1)
+        full_name=$(echo "$user_info" | cut -d: -f5 | cut -d, -f1)
+        phone_number=$(echo "$user_info" | cut -d: -f5 | cut -d, -f4)
+	user_tty=` w | grep "$user_id" | tr -s " " | cut -d" " -f2`
+	user_what=` w | grep "$user_id" | tr -s " " | cut -d" " -f8`
+
+
+	# If user is offline, set user_tty/what to default
+	if [ "$user_tty" == "" ];
+	then
+		user_tty="NOT ON"
+		user_what="  -  "
+	fi
+        	
+        # Final Print of user info
+	printf "%-20s%-25s%-15s%-8s%-s\n" "$user_id" "$full_name" "$phone_number" "$user_tty" "$user_what"
+	# printf "%-15s%-15s%-15s" "$user_id" "$full_name" "$phone_number"
+    else
+        echo "User not found: $username"
+    fi
+}
+
+# MAIN
+
+# prints titles for info
+printf "%-20s%-25s%-15s%-8s%-s\n" "USERID" "NAME" "PHONE" "TTY" "WHAT"
+
+# where the fun begins
+# three if statements to handle calling w/ or w/o cmd args
+
+# "spybear" grabs current user
+if [ $# -eq 0 ];
+then
+	currentUser="$USER"
+	# echo -e "This is $currentUser"
+	get_user_info $currentUser
+	# echo "TESTING NOW"
+	# grep BIGBADBEARS24 /etc/passwd | cut -d":" -f5
+
+# "spybear all" grabs all users in BIGBADBEARS24 class
+elif [ "$1" == "all" ];
+then
+	class_ids=`grep BIGBADBEARS24 /etc/passwd | cut -d":" -f1`
+	for x in $class_ids
+	do
+		get_user_info "$x"
+	done
+
+# "spybear user+" grabs specified users in order called
+elif [ $# -gt 0 ];
+then
+	for x in $*;
+	do
+		shift
+		get_user_info "$x"
+	done
+fi

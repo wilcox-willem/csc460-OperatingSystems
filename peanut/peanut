@@ -1,0 +1,71 @@
+#!/bin/bash
+# WILLEM WILCOX, DR. ALLEN, CSC460, MU
+
+while true; 
+do
+    # Display "Peanuts> " tag
+    read -p "Peanuts> " curr_cmd sec_cmd
+
+    # Check for exit command
+    if [ "$curr_cmd" == "nutsout" ]; then
+        echo "Oh nuts...quittin' already? Okay...Bye Bye!"
+        break
+    fi
+
+    # Switch Case for processing commands
+    case $curr_cmd in
+	# "nutty" does ???
+	"nutty")
+  		echo "Whoa, you found it, you glorious nut you"
+		;;
+	# "showcase filename" displays file with up/dwn scroll
+	"showcase")
+		less "$sec_cmd"
+		;;
+	
+	# "nutcall userid"
+	"nutcall")
+		
+		;;
+	# "nutlist" displays names of users currently logged in
+	"nutlist")
+		
+		;;
+	
+	# "nutstuff" displays contents of current directory
+	"nutstuff")
+		ls -l # I prefer the look of the listed version
+		;;
+	
+	# "helpnuts" display commands and syntax
+	"helpnuts")
+		
+		;;
+	
+	# "bignut" spawns new bash shell
+	"bignut")
+		
+		;;
+	
+	# "spybear arg/s" calls spybear
+	"spybear")
+		source spybear  		
+		;;
+	
+	# "peanutbutter filename" calls vim on filename
+	"peanutbutter")
+		vim $sec_cmd 		
+		;;
+	
+	# "hate" calls spybear
+	"hate")
+		echo "...is bad for your heart" 		
+		;;
+
+	# default case
+    	*)
+		echo "BAD NUT... TRY AGAIN..."
+		;;
+    esac
+done
+
