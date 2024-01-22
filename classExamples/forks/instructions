@@ -1,0 +1,7 @@
+Use 
+
+cc name.c 
+
+to compile c modules
+
+These are meant to test forking

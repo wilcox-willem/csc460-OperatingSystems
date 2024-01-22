@@ -39,12 +39,15 @@ do
 	
 	# "helpnuts" display commands and syntax
 	"helpnuts")
-		
+		echo "---------------------"
+		echo " -> showcase *filename*"
+		echo " This command will display the given file"
+		echo "---------------------"
 		;;
 	
 	# "bignut" spawns new bash shell
 	"bignut")
-		
+		bash	
 		;;
 	
 	# "spybear arg/s" calls spybear
