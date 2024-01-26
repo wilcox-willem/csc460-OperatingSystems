@@ -25,11 +25,18 @@ do
 	
 	# "nutcall userid"
 	"nutcall")
-		
+		userchecked=`grep "$sec_cmd" /etc/passwd | cut -d":" -f5 | cut -d"," -f1,3`
+		echo $userchecked
 		;;
 	# "nutlist" displays names of users currently logged in
 	"nutlist")
-		
+		thoseon=`who | cut -d" " -f1`
+	
+		for x in $thoseon
+		do
+   			 grep $x /etc/passwd | cut -d":" -f5 | cut -d"," -f1
+		done
+		echo		
 		;;
 	
 	# "nutstuff" displays contents of current directory
