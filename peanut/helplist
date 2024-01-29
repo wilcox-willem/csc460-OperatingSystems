@@ -1,0 +1,39 @@
+--------------------------------------------------------------------------------------
+
+88888888ba  888b      88 88        88 888888888888            ad88888ba  88        88  
+88      "8b 8888b     88 88        88      88                d8"     "8b 88        88  
+88      ,8P 88 `8b    88 88        88      88                Y8,         88        88  
+88aaaaaa8P' 88  `8b   88 88        88      88                `Y8aaaaa,   88aaaaaaaa88  
+88""""""'   88   `8b  88 88        88      88                  `"""""8b, 88""""""""88  
+88          88    `8b 88 88        88      88                        `8b 88        88  
+88          88     `8888 Y8a.    .a8P      88         888    Y8a     a8P 88        88  
+88          88      `888  `"Y8888Y"'       88         888     "Y88888P"  88        88  
+
+--------------------------------------------------------------------------------------
+		       ~ Welcome to the PEANUT shell guide! ~
+
+Format is as follows (command *arg*)=(Description)
+
+(showcase *filepath*)=(Displays file on the screen one page at a time, with 
+			the capability to scroll up or down with the arrow keys)
+
+(nutcall  *userid*)=(lookup phone number of userid and print user’s full name & 
+		      office phone number)
+
+(nutlist)=(Displays full names of those currently logged in)
+
+(nutstuff)=(Displays contents of current directory)
+
+(helpnuts)=(You're looking at me!)
+
+(nutty)=(Go ahead, find out)
+
+(peanutbutter  *filepath*)=(Opens file in a tasty editor. It's not JIF, it's VIM!)
+
+(spybear *all* /or/ *userid userid userid*)=(Displays userid, name, phone, tty, & what
+ 					     all arg shows full class, userid lists
+					     all valid userid args)
+
+(nutsout)=(Exits the PEANUT shell)
+
+--------------------------------------------------------------------------------------

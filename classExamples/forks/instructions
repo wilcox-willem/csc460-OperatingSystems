@@ -5,3 +5,5 @@ cc name.c
 to compile c modules
 
 These are meant to test forking
+
+the -o to name executable works with cc name.o

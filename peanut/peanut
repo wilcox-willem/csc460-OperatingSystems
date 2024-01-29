@@ -16,7 +16,19 @@ do
     case $curr_cmd in
 	# "nutty" does ???
 	"nutty")
-  		echo "Whoa, you found it, you glorious nut you"
+  		echo "Preparing Time Machine"
+		sleep 1
+		echo "."
+		sleep 1
+		echo "."
+		sleep 1
+		echo "."
+		sleep 3
+		echo " "
+		echo -e "\033[31mSegmentation Fault (Core dumped)\033[0m"
+		echo " "
+		sleep 1
+		echo "Nuts...Maybe next time..."
 		;;
 	# "showcase filename" displays file with up/dwn scroll
 	"showcase")
@@ -46,10 +58,7 @@ do
 	
 	# "helpnuts" display commands and syntax
 	"helpnuts")
-		echo "---------------------"
-		echo " -> showcase *filename*"
-		echo " This command will display the given file"
-		echo "---------------------"
+		cat helplist
 		;;
 	
 	# "bignut" spawns new bash shell
@@ -59,7 +68,7 @@ do
 	
 	# "spybear arg/s" calls spybear
 	"spybear")
-		source spybear  		
+		source spybear $sec_cmd		
 		;;
 	
 	# "peanutbutter filename" calls vim on filename
@@ -74,7 +83,7 @@ do
 
 	# default case
     	*)
-		echo "BAD NUT... TRY AGAIN..."
+		echo "BAD NUT... TRY ~ helpnuts ~ ..."
 		;;
     esac
 done
