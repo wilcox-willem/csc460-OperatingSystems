@@ -1,16 +1,25 @@
 #!/bin/bash
 
-# This kills any runaway a.out by default, or named process if command arg
+proc="a.out"
 
 if [ $# -eq 0 ];
-then
-    runaways=`ps -ef | grep wilcox_+ | grep a.out | cut -d" " -f2`
-elif [ $# -eq 1 ];
-then
-    runaways=`ps -ef | grep wilcox_+ | grep $1 | cut -d" " -f2`
+then 
+    proc=$1
+fi
 
+runaways=`ps -ef | grep wilcox_+ | grep "$proc" | cut -d" " -f2`
+
+
+
+cat -e "pre culling"
+ps -ef | grep wilcox | grep "$proc"
 
 for x in $runaways
 do
     kill $x
 done
+
+cat -e "post culling"
+ps -ef | grep wilcox | grep "$proc"
+
+cat -e "done"
