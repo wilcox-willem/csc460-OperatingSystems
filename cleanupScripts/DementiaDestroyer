@@ -1,0 +1,18 @@
+#!/bin/bash
+
+runaways=`ipcs | grep wilcox_+ | cut -d" " -f2`
+
+cat -e "pre culling"
+cat $runaways
+
+for x in $runaways
+do
+    kill $x
+done
+
+cat -e "post culling"
+
+
+cat `ipcs | grep wilcox_+ | cut -d" " -f2`
+
+cat -e "done"
