@@ -2,24 +2,32 @@
 
 proc="a.out"
 
-if [ $# -eq 0 ];
+if [ $# -gt 0 ];
 then 
     proc=$1
 fi
 
+
 runaways=`ps -ef | grep wilcox_+ | grep "$proc" | cut -d" " -f2`
 
 
+runawaysCount=`ps -ef | grep wilcox_+ | grep "$proc" | cut -d" " -f2 | wc -l`
 
-cat -e "pre culling"
+if [ $runawaysCount -gt 1 ]
+then
+
+echo -e "pre culling"
 ps -ef | grep wilcox | grep "$proc"
 
 for x in $runaways
 do
     kill $x
+    echo "Killed PID $x"
 done
 
-cat -e "post culling"
+echo -e "post culling"
 ps -ef | grep wilcox | grep "$proc"
 
-cat -e "done"
+fi
+
+echo -e "done"

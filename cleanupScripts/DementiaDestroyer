@@ -2,17 +2,18 @@
 
 runaways=`ipcs | grep wilcox_+ | cut -d" " -f2`
 
-cat -e "pre culling"
-cat $runaways
+echo "pre culling"
+echo "$runaways"
 
 for x in $runaways
 do
-    kill $x
+    ipcrm $x
 done
 
-cat -e "post culling"
+echo "post culling"
+
+runawaysPost=`ipcs | grep wilcox_+ | cut -d" " -f2`
+echo "$runawaysPost"
 
 
-cat `ipcs | grep wilcox_+ | cut -d" " -f2`
-
-cat -e "done"
+echo "done"
