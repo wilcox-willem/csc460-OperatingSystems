@@ -48,7 +48,7 @@ for (i = 1; i < N; i++) {
   if (fork() > 0) break; // send parent on to Body
   myID++;
 }
-printf("I'm Alive: %d - %d\n",getpid(),myID);
+// printf("I'm Alive: %d - %d\n",getpid(),myID); // print when spawned
 sleep(1);
 
 
@@ -56,9 +56,10 @@ sleep(1);
 for (i = 0; i < LoopCount; i++) {
   while(TURN != myID);  /** busy wait for Child **/
 
-  char myChar = 'A' + myID - 1;
+  // set char for printing
+  char myChar = 'A' + myID;
 
-  printf("%c:%d\n"myChar,myID);
+  printf("%c:%d\n",myChar,getpid());
   TURN = (TURN + 1) % N;
 }
 
@@ -72,6 +73,6 @@ if (firstID == getpid()) // ONLY need one process to do this
 if ((shmctl(shmid, IPC_RMID, NULL)) == -1)
   printf("ERROR removing shmem.\n");
 
-printf("alldone\n");
+// printf("alldone\n"); // see when procs end
 }
 
