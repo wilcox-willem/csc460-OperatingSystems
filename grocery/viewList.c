@@ -24,7 +24,7 @@ main(int argc, char *argv[]) {
 
     /*****  Open File to hold Shared Memory ID  *****/
     if((fp = fopen("./BBID.txt","r")) == NULL) {
-        printf("watch:  could not open file.\n");
+        printf("viewList:  could not open file.\n");
         return(0);
     }
 
@@ -35,7 +35,7 @@ main(int argc, char *argv[]) {
     /****   Attach to the shared memory  ******/
     shmem = (struct bbStruct *) shmat(shmid, NULL, SHM_RND);
 
-    printf("\n\nHERE IS OUR SHARED GROCERY LIST:\n\n");
+    printf("\n\nHERE IS THE CSC460 SHARED GROCERY LIST:\n\n");
     for (i=0;i<22;i++) {
         printf("%2d: %20s| %8d| %30s|\n",shmem->id,shmem->name,shmem->favNum,shmem->favFood);
         shmem++;
