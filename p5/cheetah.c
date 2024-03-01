@@ -38,8 +38,7 @@ if (sem_id == -1) {
 /*****  Initialize your sems *****/
 int i = N;
 for (i = 0; i < N; i++) {
-  char temp = 'A' + i;
-  semctl(sem_id, i, SETVAL, i);
+  semctl(sem_id, i, SETVAL, 1);
 }
 
 
