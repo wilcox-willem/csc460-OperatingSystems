@@ -1,11 +1,7 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
-#include <sys/shm.h>
+#include <sys/sem.h>
 #include <stdio.h>
-
-// Prototypes for Semaphore Funcs
-p(int s,int sem_id):
-v(int s, int sem_id):
 
 main(int argc, char *argv[]) {
 int i, sem_id;
@@ -14,9 +10,9 @@ int myID = 0;           // used to identify procs in sync
 int LoopCount = 3;     // Times each proc will "speak"
 
 /*****  Get the command line argument for how many procs. Default of 5 ****/
-if (argc < 2)
+if (argc < 2) {
   N = 5;
-else if (argc == 2) {
+} else if (argc == 2) {
   N = atoi(argv[1]); 
 
   // check N is in bounds
