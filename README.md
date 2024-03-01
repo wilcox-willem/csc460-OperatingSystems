@@ -10,4 +10,6 @@ Here are my class resources, assignments, and extras. Enjoy!
 - [x] peanut
 - [x] road
 - [x] p2
-- [ ] p3
+- [x] p3
+- [x] grocery
+- [x] p5
