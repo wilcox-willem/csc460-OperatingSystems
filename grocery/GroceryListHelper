@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Update ./BBID with /pub/csc460/bb/BBID.txt
+cp /pub/csc460/bb/BBID.txt ./BBID.txt
+
+# Array to store executable names
+executables=(
+    "a.viewList"
+    "a.updateMyName"
+    "a.addQuantity"
+    "a.addFood"
+)
+
+# Display numbered list of executables
+echo "Available executables:"
+for ((i=0; i<${#executables[@]}; i++)); do
+    echo "$((i+1)). ${executables[$i]}"
+done
+
+# Prompt the user to choose an executable
+read -p "Enter the number of the executable you want to run: " choice
+
+# Validate user input
+if ! [[ "$choice" =~ ^[0-4]+$ ]]; then
+    echo "Error: Please enter a valid number."
+    exit 1
+fi
+
+if (( choice < 1 || choice > ${#executables[@]} )); then
+    echo "Error: Invalid choice. Please enter a number between 1 and ${#executables[@]}."
+    exit 1
+fi
+
+# Prompt the user for any additional command-line arguments
+read -p "Enter arg (args w/ whitespace don't need \" \". If using a.viewList, hit enter): " arguments
+
+# Run the selected executable with provided arguments
+"${executables[$((choice-1))]}" "$arguments"
+
+
+

@@ -1,0 +1,188 @@
+Script started on Fri 01 Mar 2024 04:36:36 PM EST
+]0;wilcox_we@assemble:~/csc460-spring2024/bigbadbears24/grocery[?1034h[wilcox_we@assemble grocery]$ cat README 
+----------------------------------------------------------------------------------
+Willem Wilcox
+CSC 460, Dr. Allen, MU
+2/29/24
+Grocery Assignment
+
+My files rely on a version of the BBID.txt in this directory.
+
+To update BBID.txt with the bulletin board version, and test the compiled programs
+
+use the bash script "GroceryListHelper"
+
+FURTHERMORE, there will be a typescript demonstration of my files as well
+----------------------------------------------------------------------------------
+]0;wilcox_we@assemble:~/csc460-spring2024/bigbadbears24/grocery[wilcox_we@assemble grocery]$ cat GroceryListHelper 
+#!/bin/bash
+
+# Update ./BBID with /pub/csc460/bb/BBID.txt
+cp /pub/csc460/bb/BBID.txt ./BBID.txt
+
+# Array to store executable names
+executables=(
+    "a.viewList"
+    "a.updateMyName"
+    "a.addQuantity"
+    "a.addFood"
+)
+
+# Display numbered list of executables
+echo "Available executables:"
+for ((i=0; i<${#executables[@]}; i++)); do
+    echo "$((i+1)). ${executables[$i]}"
+done
+
+# Prompt the user to choose an executable
+read -p "Enter the number of the executable you want to run: " choice
+
+# Validate user input
+if ! [[ "$choice" =~ ^[0-4]+$ ]]; then
+    echo "Error: Please enter a valid number."
+    exit 1
+fi
+
+if (( choice < 1 || choice > ${#executables[@]} )); then
+    echo "Error: Invalid choice. Please enter a number between 1 and ${#executables[@]}."
+    exit 1
+fi
+
+# Prompt the user for any additional command-line arguments
+read -p "Enter arg (args w/ whitespace don't need \" \". If using a.viewList, hit enter): " arguments
+
+# Run the selected executable with provided arguments
+"${executables[$((choice-1))]}" "$arguments"
+
+
+
+]0;wilcox_we@assemble:~/csc460-spring2024/bigbadbears24/grocery[wilcox_we@assemble grocery]$ Grpc[K[KoceryListHelper 
+Available executables:
+1. a.viewList
+2. a.updateMyName
+3. a.addQuantity
+4. a.addFood
+Enter the number of the executable you want to run: 1
+Enter arg (args w/ whitespace don't need " ". If using a.viewList, hit enter): 
+
+
+HERE IS OUR SHARED GROCERY LIST:
+
+ 1:           Allen, Bob|        0|                               |
+ 2:  Anderson, Cleveland|        0|                               |
+ 3:         Cargin, Erin|        3|                               |
+ 4:     Gilliam, Charlie|        0|                               |
+ 5:        Hynds, Joshua|        0|                               |
+ 6:          Imlay, Gabe|        0|                               |
+ 7:      Jackson, Joseph|        0|                               |
+ 8:       Jackson, Penny|        0|                               |
+ 9:     Johnson, Maxwell|        0|                               |
+10:     Koenig, McGregor|        0|                               |
+11:        Kotze, Dirkie|        0|                               |
+12:      Mykytyn, Stefan|        0|                               |
+13:        Novak, Cooper|        0|                               |
+14:           Ong, Quyen|        0|                               |
+15:    Pangilinan, Ervin|        0|                               |
+16:         Patel, Manav|        0|                               |
+17:           Patel, Raj|        0|                               |
+18:       Rivers, Seiler|        0|                               |
+19:     Rodriguez, Kevin|        0|                               |
+20:            Tas, Taha|        0|                               |
+21:        Truong, Bryan|        0|                               |
+22:        melliW xocliW|      460|                       Cabbages|
+
+
+]0;wilcox_we@assemble:~/csc460-spring2024/bigbadbears24/grocery[wilcox_we@assemble grocery]$ GroceryListHelper 
+Available executables:
+1. a.viewList
+2. a.updateMyName
+3. a.addQuantity
+4. a.addFood
+Enter the number of the executable you want to run: 2
+Enter arg (args w/ whitespace don't need " ". If using a.viewList, hit enter): lliW xocliW
+
+
+Updating current "Name" with: "lliW xocliW"
+
+22:          lliW xocliW|      460|                       Cabbages|
+]0;wilcox_we@assemble:~/csc460-spring2024/bigbadbears24/grocery[wilcox_we@assemble grocery]$ GroceryListHelper 
+Available executables:
+1. a.viewList
+2. a.updateMyName
+3. a.addQuantity
+4. a.addFood
+Enter the number of the executable you want to run: 2
+Enter arg (args w/ whitespace don't need " ". If using a.viewList, hit enter): 461
+
+
+Updating current "Name" with: "461"
+
+22:                  461|      460|                       Cabbages|
+]0;wilcox_we@assemble:~/csc460-spring2024/bigbadbears24/grocery[wilcox_we@assemble grocery]$ GroceryListHelper [4@cat [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[4P[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C
+Available executables:
+1. a.viewList
+2. a.updateMyName
+3. a.addQuantity
+4. a.addFood
+Enter the number of the executable you want to run: 2
+Enter arg (args w/ whitespace don't need " ". If using a.viewList, hit enter): lliw xocliW
+
+
+Updating current "Name" with: "lliw xocliW"
+
+22:          lliw xocliW|      460|                       Cabbages|
+]0;wilcox_we@assemble:~/csc460-spring2024/bigbadbears24/grocery[wilcox_we@assemble grocery]$ GroceryListHelper [4@cat [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[4P[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C
+Available executables:
+1. a.viewList
+2. a.updateMyName
+3. a.addQuantity
+4. a.addFood
+Enter the number of the executable you want to run: 3
+Enter arg (args w/ whitespace don't need " ". If using a.viewList, hit enter): 461
+
+
+Updating current "Quantity" with: "461"
+
+22:          lliw xocliW|      461|                       Cabbages|
+]0;wilcox_we@assemble:~/csc460-spring2024/bigbadbears24/grocery[wilcox_we@assemble grocery]$ GroceryListHelper 
+Available executables:
+1. a.viewList
+2. a.updateMyName
+3. a.addQuantity
+4. a.addFood
+Enter the number of the executable you want to run: 4
+Enter arg (args w/ whitespace don't need " ". If using a.viewList, hit enter): Ca  R Blueberry Muffins
+
+
+Updating current "Food Item" with: "Blueberry Muffins"
+
+22:          lliw xocliW|      461|              Blueberry Muffins|
+]0;wilcox_we@assemble:~/csc460-spring2024/bigbadbears24/grocery[wilcox_we@assemble grocery]$ ls -ls
+total 80
+12 -rwxrwxr-x. 1 wilcox_we wilcox_we 8728 Mar  1 15:46 [0m[38;5;34ma.addFood[0m
+12 -rwxrwxr-x. 1 wilcox_we wilcox_we 8680 Mar  1 16:12 [38;5;34ma.addQuantity[0m
+ 4 -rw-rw-r--. 1 wilcox_we wilcox_we 1731 Mar  1 15:46 addFood.c
+ 4 -rw-rw-r--. 1 wilcox_we wilcox_we 1725 Mar  1 16:12 addQuantity.c
+12 -rwxrwxr-x. 1 wilcox_we wilcox_we 8736 Mar  1 15:51 [38;5;34ma.updateMyName[0m
+12 -rwxrwxr-x. 1 wilcox_we wilcox_we 8624 Feb 26 22:31 [38;5;34ma.viewList[0m
+ 4 -rwxrwxr-x. 1 wilcox_we wilcox_we    7 Mar  1 16:38 [38;5;34mBBID.txt[0m
+ 4 -rwxrwxr-x. 1 wilcox_we wilcox_we 1043 Mar  1 16:35 [38;5;34mGroceryListHelper[0m
+ 0 drwxrwxr-x. 2 wilcox_we wilcox_we  102 Feb 26 21:49 [38;5;27mp4[0m
+ 4 -rw-rw-r--. 1 wilcox_we wilcox_we  493 Mar  1 16:36 README
+ 4 -rw-rw-r--. 1 wilcox_we wilcox_we 4096 Mar  1 16:37 typescript
+ 4 -rw-rw-r--. 1 wilcox_we wilcox_we 1727 Mar  1 15:50 updateMyName.c
+ 4 -rw-rw-r--. 1 wilcox_we wilcox_we 1075 Feb 27 17:53 viewList.c
+]0;wilcox_we@assemble:~/csc460-spring2024/bigbadbears24/grocery[wilcox_we@assemble grocery]$ cd p4
+]0;wilcox_we@assemble:~/csc460-spring2024/bigbadbears24/grocery/p4[wilcox_we@assemble p4]$ cd p4ls -ls
+total 52
+ 4 -rwxrwxr-x. 1 wilcox_we wilcox_we    7 Feb 23 12:33 [0m[38;5;34mBBID.txt[0m
+12 -rwxrwxr-x. 1 wilcox_we wilcox_we 8624 Feb 26 21:49 [38;5;34mend[0m
+ 4 -rw-rw-r--. 1 wilcox_we wilcox_we  650 Feb 23 12:33 end.c
+12 -rwxrwxr-x. 1 wilcox_we wilcox_we 8752 Feb 26 21:49 [38;5;34mstart[0m
+ 4 -rw-rw-r--. 1 wilcox_we wilcox_we 1952 Feb 23 12:33 start.c
+12 -rwxrwxr-x. 1 wilcox_we wilcox_we 8624 Feb 26 21:49 [38;5;34mwatch[0m
+ 4 -rw-rw-r--. 1 wilcox_we wilcox_we  888 Feb 23 12:33 watch.c
+]0;wilcox_we@assemble:~/csc460-spring2024/bigbadbears24/grocery/p4[wilcox_we@assemble p4]$ exit
+exit
+
+Script done on Fri 01 Mar 2024 04:39:12 PM EST
