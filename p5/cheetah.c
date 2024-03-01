@@ -1,3 +1,13 @@
+// Willem Wilcox
+// CSC 460, Dr. Allen, MU
+// 3/1/24
+// p5: cheetah sync!
+
+// Funny story, at Geek Squad most of coworkers have quit
+// so I am now 1/3 of the entirety of Warner Robins Geek Squad
+// ...
+// I cant wait to get a better job
+
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/sem.h>
@@ -36,9 +46,9 @@ if (sem_id == -1) {
 }
 
 /*****  Initialize your sems *****/
-semctl(sem_id, 0, SETVAL, 0);
+semctl(sem_id, 0, SETVAL, 1);
 for (i = 1; i < N; i++) {
-  semctl(sem_id, i, SETVAL, 1);
+  semctl(sem_id, i, SETVAL, 0);
 }
 
 
@@ -59,7 +69,7 @@ for (i = 0; i < LoopCount; i++) {
   char myChar = 'A' + myID;
 
   printf("%c:%d\n",myChar,getpid());
-  v((myID + 1) % N, sem_id);
+  v((myID + 1) % N, sem_id); // notify next turn
 }
 
 sleep(1);
