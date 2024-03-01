@@ -36,15 +36,15 @@ if (sem_id == -1) {
 }
 
 /*****  Initialize your sems *****/
-int i = N;
-for (i = 0; i < N; i++) {
+semctl(sem_id, 0, SETVAL, 0);
+for (i = 1; i < N; i++) {
   semctl(sem_id, i, SETVAL, 1);
 }
 
 
 /*************  Spawn all the Processes *********/
 for (i = 1; i < N; i++) {
-  if (fork() > 0) break; // send child on to Body
+  if (fork() > 0) break; // send parent on to Body
   myID++;
 }
 
@@ -53,13 +53,13 @@ sleep(1);
 
 /*************  BODY  OF  PROGRAM     ***********/
 for (i = 0; i < LoopCount; i++) {
-  p(sem_id, myID) // wait for turn
+  p(myID, sem_id); // wait for turn
 
   // set char for printing
   char myChar = 'A' + myID;
 
   printf("%c:%d\n",myChar,getpid());
-  v(sem_id, (myID + 1) % N)
+  v((myID + 1) % N, sem_id);
 }
 
 sleep(1);
@@ -72,7 +72,7 @@ if (firstID == getpid()) { // ONLY need original process to do this
   }
 }
 
-return(0)
+return(0);
 }
 
 
