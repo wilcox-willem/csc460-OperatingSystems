@@ -3,10 +3,12 @@
 #include <sys/shm.h>
 #include <stdio.h>
 
-#define TURN shmem[0]
+// Prototypes for Semaphore Funcs
+p(int s,int sem_id):
+v(int s, int sem_id):
 
 main(int argc, char *argv[]) {
-int i, shmid, *shmem;
+int i, sem_id;
 int N;                  // Holds the number of procs to generate
 int myID = 0;           // used to identify procs in sync
 int LoopCount = 3;     // Times each proc will "speak"
@@ -27,52 +29,73 @@ else if (argc == 2) {
 /*****  Make a note of "who" is the first Process *****/
 int firstID = getpid();
 
-/*****  Get Shared Memory and ID *****/
-shmid  =  shmget(IPC_PRIVATE, sizeof(int), 0770);
-if (shmid == -1) {
-  printf("Could not get shared memory.\n");
-  return(0);
+/*****  Ask OS for Sems *****/
+sem_id = semget (IPC_PRIVATE, N, 0777);
+
+
+/*****  See if you got the request *****/
+if (sem_id == -1) {
+  printf("%s","SemGet Failed.\n");
+  return (-1);
 }
 
-
-/****   Attach to the shared memory  ******/
-shmem = (int *) shmat(shmid, NULL, SHM_RND);
-
-
-/****  Initialize the shared memory ****/
-TURN = 0;
+/*****  Initialize your sems *****/
+int i = N;
+for (i = 0; i < N; i++) {
+  char temp = 'A' + i;
+  semctl(sem_id, i, SETVAL, i);
+}
 
 
 /*************  Spawn all the Processes *********/
 for (i = 1; i < N; i++) {
-  if (fork() > 0) break; // send parent on to Body
+  if (fork() > 0) break; // send child on to Body
   myID++;
 }
-// printf("I'm Alive: %d - %d\n",getpid(),myID); // print when spawned
+
 sleep(1);
 
 
 /*************  BODY  OF  PROGRAM     ***********/
 for (i = 0; i < LoopCount; i++) {
-  while(TURN != myID);  /** busy wait for Child **/
+  p(sem_id, myID) // wait for turn
 
   // set char for printing
   char myChar = 'A' + myID;
 
   printf("%c:%d\n",myChar,getpid());
-  TURN = (TURN + 1) % N;
+  v(sem_id, (myID + 1) % N)
 }
-
-
-/****   Detach and clean-up the shared memory  ******/
-if (shmdt(shmem) == -1 ) printf("shmgm: ERROR in detaching.\n");
 
 sleep(1);
 
-if (firstID == getpid()) // ONLY need one process to do this
-if ((shmctl(shmid, IPC_RMID, NULL)) == -1)
-  printf("ERROR removing shmem.\n");
-
-// printf("alldone\n"); // see when procs end
+if (firstID == getpid()) { // ONLY need original process to do this
+  // clean up
+  sleep(2);
+  if ((semctl(sem_id, 0, IPC_RMID, 0)) == -1) {
+    printf("%s", "Parent: ERROR in removing sem\n");
+  }
 }
 
+return(0)
+}
+
+
+/***** Semaphore Functions *****/
+p(int s,int sem_id) {
+  struct sembuf sops;
+
+  sops.sem_num = s;
+  sops.sem_op = -1;
+  sops.sem_flg = 0;
+  if((semop(sem_id, &sops, 1)) == -1) printf("%s", "'P' error\n");
+}
+
+v(int s, int sem_id) {
+  struct sembuf sops;
+
+  sops.sem_num = s;
+  sops.sem_op = 1;
+  sops.sem_flg = 0;
+  if((semop(sem_id, &sops, 1)) == -1) printf("%s","'V' error\n");
+}
