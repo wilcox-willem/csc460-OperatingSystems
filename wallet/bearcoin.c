@@ -1,4 +1,4 @@
-/:/ Willem Wilcox
+// Willem Wilcox
 // CSC 460, Dr. Allen, MU
 // 3/19/24
 // p6: bearcoin!
@@ -10,6 +10,7 @@
 #include <sys/ipc.h>
 #include <sys/sem.h>
 #include <stdio.h>
+#include <sys/shm.h>
 
 main(int argc, char *argv[]) {
 
@@ -37,30 +38,30 @@ main(int argc, char *argv[]) {
     }
 
     if (getShmemID() == -1) {
-      printf("error, system not initialized. Run without args first\n")
+      printf("error, system not initialized. Run without args first\n");
       return (1);
     }
 
   // cleanup arg call
   } else if (argc == 2 && argv[1] == "cleanup" && shmemID != -1) {
-      run_cleanup(); // implement function for cleanup
-
+      // run_cleanup(); // implement function for cleanup
+      int dummy = 0;
   // no args call
   } else if (argc == 1){
       if (shmemID == -1){
       // if not setup, init shmemory & semaphore for crypto club
         shmemID =  shmget(IPC_PRIVATE, sizeof(int), 0770);
         if (shmemID != -1) {
-          shmem = (int *) shmat(shmid, NULL, SHM_RND);
+          shmem = (int *) shmat(shmemID, NULL, SHM_RND);
           *shmem = 460;
         }
         else {
-          printf("Unable to get shared memory\n")
+          printf("Unable to get shared memory\n");
           return (1);
         }
 
         /*****  Ask OS for Sems *****/
-        semID = semget (IPC_PRIVATE, N, 0777);
+        semID = semget (IPC_PRIVATE, 1, 0777);
 
         /*****  See if you got the request *****/
         if (semID == -1) {
@@ -77,7 +78,9 @@ main(int argc, char *argv[]) {
 
       // if setup, print current wallet
       else {
-        printWallet(shmemID);
+	shmemID = getShmemID();
+	shmem = (int *) shmat(shmemID, NULL, SHM_RND); 
+        printWallet(shmem);
       }
   }
 
@@ -145,7 +148,7 @@ int getShmemID() {
     int semID = -1;
     
     if ((fp = fopen("./cryptodata","r")) != NULL) {
-      fscanf(fp,"%d\n%d", &shmemID, $semID);
+      fscanf(fp,"%d\n%d", &shmemID, &semID);
       fclose(fp);
     }
 
@@ -160,7 +163,7 @@ int getSemID() {
     int semID = -1;
     
     if ((fp = fopen("./cryptodata","r")) != NULL) {
-      fscanf(fp,"%d\n%d", &shmemID, $semID);
+      fscanf(fp,"%d\n%d", &shmemID, &semID);
       fclose(fp);
     }
 
@@ -170,13 +173,13 @@ int getSemID() {
 storeCryptoData(int shmemID, int semID) {
   FILE *fopen(), *fp;
 
-  fp = fopen("./cryptodata","w")
+  fp = fopen("./cryptodata","w");
   fprintf(fp, "%d\n%d\n", shmemID, semID);
   fclose(fp);
    
 }
 
-printWallet(int shmemID) {
-  printf("Coins currently in Wallet: %d",&shmemID);
+printWallet(int* shmem) {
+  printf("Coins currently in Wallet: %d",*shmem);
 }
 
