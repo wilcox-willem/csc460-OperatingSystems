@@ -19,6 +19,7 @@ main(int argc, char *argv[]) {
   int myChange = 1;      // Holds this procs change in val
   int myID = 0;          // used to identify vals of buyer or seller
                          // (0-15 Buy, 16-31 Sell)
+  bool runSim = false;   // used to keep sim section out of arg checker
 
   // Make a note of "who" is the first Process
   firstID = getpid();
@@ -42,14 +43,17 @@ main(int argc, char *argv[]) {
       return (1);
     }
 
-  // cleanup arg call
-  } else if (argc == 2 && argv[1] == "cleanup" && shmemID != -1) {
+    runSim = true; // sim logic after arg checker
+  }
+  // cleanup arg call 
+  else if (argc == 2 && argv[1] == "cleanup" && shmemID != -1) {
       // run_cleanup(); // implement function for cleanup
       int dummy = 0;
+  } 
   // no args call
-  } else if (argc == 1){
-      if (shmemID == -1){
-      // if not setup, init shmemory & semaphore for crypto club
+  else if (argc == 1){
+      // nor args: not initialized
+      if (shmemID == -1) {
         shmemID =  shmget(IPC_PRIVATE, sizeof(int), 0770);
         if (shmemID != -1) {
           shmem = (int *) shmat(shmemID, NULL, SHM_RND);
@@ -75,46 +79,51 @@ main(int argc, char *argv[]) {
         /***** Store ID's in "cryptodata" *****/
         storeCryptoData(shmemID, semID);
       }
-
       // if setup, print current wallet
       else {
-	shmemID = getShmemID();
-	shmem = (int *) shmat(shmemID, NULL, SHM_RND); 
+	      shmemID = getShmemID();
+	      shmem = (int *) shmat(shmemID, NULL, SHM_RND); 
         printWallet(shmem);
       }
   }
 
-////////
-  // prep ID's
-  if (shmemID == -1 || semID == -1) {
-    shmemID = getShmemID();
-    semID = getSemID();
-  }
 
-  // start forking
-  /*********  Spawn all the Parents *********/
-  for (i = 1; i < 16; i++) {
-    if (fork() > 0) break; // send parent on to Body
-    myID++;
-  }
+  // Run the sim if passed in args
+  if (runSim) {
+    // prep ID's
+    if (shmemID == -1 || semID == -1) {
+      shmemID = getShmemID();
+      semID = getSemID();
+    }
 
-  // set parent starting money
-  for (i = 0; i < myID; i++){
-    myChange = myChange * 2;
-  }
+    // start forking
+    /*********  Spawn all the Parents *********/
+    for (i = 1; i < 16; i++) {
+      if (fork() > 0) break; // send parent on to Body
+      myID++;
+    }
 
-  /*********  Spawn all the Kids *********/
-  if (myID >= 0 && myID <= 15) {
-    if (fork() == 0) {
-      myID += 16;
-      myChange = myChange * -1; // -1 since takin money
+    // set parent starting money
+    for (i = 0; i < myID; i++){
+      myChange = myChange * 2;
+    }
+
+    /*********  Spawn all the Kids *********/
+    if (myID >= 0 && myID <= 15) {
+      if (fork() == 0) {
+        myID += 16;
+        myChange = myChange * -1; // -1 since takin money
+      }
+    }
+
+    // run sim
+    for (i = 0; i < simCount; i++) {
+      printf("Dummy - %d and $%d", myID, myChange);
     }
   }
 
-  // run sim
-  for (i = 0; i < simCount; i++) {
-
-  }
+  printf("Done!");
+  return (0);
 }
 
 
