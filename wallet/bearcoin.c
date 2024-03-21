@@ -10,6 +10,7 @@
 #include <sys/ipc.h>
 #include <sys/sem.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/shm.h>
 
 main(int argc, char *argv[]) {
@@ -19,7 +20,8 @@ main(int argc, char *argv[]) {
   int myChange = 1;      // Holds this procs change in val
   int myID = 0;          // used to identify vals of buyer or seller
                          // (0-15 Buy, 16-31 Sell)
-  bool runSim = false;   // used to keep sim section out of arg checker
+  int runSim = 0;   // used to keep sim section out of arg checker
+  int temp_balance, old_balance, new_balance;
 
   // Make a note of "who" is the first Process
   firstID = getpid();
@@ -29,7 +31,7 @@ main(int argc, char *argv[]) {
 
   /*****  Get the command line argument ****/
   // int arg call
-  if (argc ==  2 && argv[1] != "cleanup") {
+  if (argc ==  2 && strcmp(argv[1], "cleanup") != 0) {
     simCount = atoi(argv[1]); 
 
     // check simCount is in bounds 1-100
@@ -43,12 +45,11 @@ main(int argc, char *argv[]) {
       return (1);
     }
 
-    runSim = true; // sim logic after arg checker
+    runSim = 1; // sim logic after arg checker
   }
   // cleanup arg call 
-  else if (argc == 2 && argv[1] == "cleanup" && shmemID != -1) {
-      // run_cleanup(); // implement function for cleanup
-      int dummy = 0;
+  else if (argc == 2 && strcmp(argv[1], "cleanup") == 0) {
+      run_cleanup(); // implemented cleanup
   } 
   // no args call
   else if (argc == 1){
@@ -89,7 +90,7 @@ main(int argc, char *argv[]) {
 
 
   // Run the sim if passed in args
-  if (runSim) {
+  if (runSim == 1) {
     // prep ID's
     if (shmemID == -1 || semID == -1) {
       shmemID = getShmemID();
@@ -118,23 +119,23 @@ main(int argc, char *argv[]) {
 
     // core loop of sim
     for (i = 0; i < simCount; i++) {
-      printf("Dummy - %d and $%d", myID, myChange);
+      printf("Dummy - %d and $%d\n", myID, myChange);
 
       // wait for safe usage     
       p(myID, semID);
 
       // WARNING: ENTERING THE CRITICAL ZONE
-      int temp_balance = *shmem; // get current balance
-      int old_balance = temp_balance;
-      int new_balance = temp_balance + myChange;
+      temp_balance = *shmem; // get current balance
+      old_balance = temp_balance;
+      new_balance = temp_balance + myChange;
 
       *shmem = new_balance;
 
       if (myID < 16) {
-        printf("%d: %d + %d = %d", myID, old_balance, myChange, new_balance);
+        printf("%d: %d + %d = %d\n", myID, old_balance, myChange, new_balance);
       }
       else {
-        printf("\t\t%d: %d %d = %d", myID, old_balance, myChange, new_balance);
+        printf("\t\t%d: %d %d = %d\n", myID, old_balance, myChange, new_balance);
       }  
 
       // WARNING: LEAVING THE CRITICAL ZONE
@@ -144,7 +145,7 @@ main(int argc, char *argv[]) {
     }
   }
 
-  printf("Done!");
+  printf("Done!\n");
   return (0);
 }
 
@@ -153,19 +154,21 @@ main(int argc, char *argv[]) {
 p(int s,int sem_id) {
   struct sembuf sops;
 
-  sops.sem_num = s;
+  sops.sem_num = 0;
   sops.sem_op = -1;
   sops.sem_flg = 0;
-  if((semop(sem_id, &sops, 1)) == -1) printf("%s", "'P' error\n");
+  if((semop(sem_id, &sops, 1)) == -1) 
+    printf("P error\n");
 }
 
 v(int s, int sem_id) {
   struct sembuf sops;
 
-  sops.sem_num = s;
+  sops.sem_num = 0;
   sops.sem_op = 1;
   sops.sem_flg = 0;
-  if((semop(sem_id, &sops, 1)) == -1) printf("%s","'V' error\n");
+  if((semop(sem_id, &sops, 1)) == -1) 
+    printf("V error\n");
 }
 
 
@@ -211,7 +214,7 @@ storeCryptoData(int shmemID, int semID) {
 }
 
 printWallet(int* shmem) {
-  printf("Coins currently in Wallet: %d",*shmem);
+  printf("Coins currently in Wallet: %d\n",*shmem);
 }
 
 run_cleanup() {
@@ -229,7 +232,7 @@ run_cleanup() {
     printf("ERROR removing shmem\n");
 
     // remove sem
-    if ((semctl(ssemID, 0, IPC_RMID, 0)) == -1)
+    if ((semctl(semID, 0, IPC_RMID, 0)) == -1)
     printf("ERROR removing sem\n");
 
     
