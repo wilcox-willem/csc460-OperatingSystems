@@ -116,9 +116,31 @@ main(int argc, char *argv[]) {
       }
     }
 
-    // run sim
+    // core loop of sim
     for (i = 0; i < simCount; i++) {
       printf("Dummy - %d and $%d", myID, myChange);
+
+      // wait for safe usage     
+      p(myID, semID);
+
+      // WARNING: ENTERING THE CRITICAL ZONE
+      int temp_balance = *shmem; // get current balance
+      int old_balance = temp_balance;
+      int new_balance = temp_balance + myChange;
+
+      *shmem = new_balance;
+
+      if (myID < 16) {
+        printf("%d: %d + %d = %d", myID, old_balance, myChange, new_balance);
+      }
+      else {
+        printf("\t\t%d: %d %d = %d", myID, old_balance, myChange, new_balance);
+      }  
+
+      // WARNING: LEAVING THE CRITICAL ZONE
+      // signal end of usage     
+      p(myID, semID);
+
     }
   }
 
@@ -192,3 +214,26 @@ printWallet(int* shmem) {
   printf("Coins currently in Wallet: %d",*shmem);
 }
 
+run_cleanup() {
+  FILE *fopen(), *fp; 
+  int shmemID, semID;  
+
+  // if init/file exists
+  if ((fp = fopen("./cryptodata","r")) != NULL) {
+    fclose(fp);
+    semID = getSemID();
+    shmemID = getShmemID();
+
+    // remove shmem
+    if ((shmctl(shmemID, IPC_RMID, NULL)) == -1)
+    printf("ERROR removing shmem\n");
+
+    // remove sem
+    if ((semctl(ssemID, 0, IPC_RMID, 0)) == -1)
+    printf("ERROR removing sem\n");
+
+    
+    system("rm ./cryptodata");
+  }
+
+}
