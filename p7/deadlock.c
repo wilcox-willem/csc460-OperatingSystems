@@ -1,88 +1,132 @@
 // Willem Wilcox
 // CSC 460, Dr. Allen, MU
 // 3/1/24
-// p5: cheetah sync!
+// p7: Bob's Deadly Diner
 
-// Funny story, at Geek Squad most of coworkers have quit
-// so I am now 1/3 of the entirety of Warner Robins Geek Squad
-// ...
-// I cant wait to get a better job
+// I'm not a huge anime watcher, BUT recently I have been rewatching
+// 'Ghost in the Shell' and 'Akira'. I love the art style, and I think
+// the concepts are both a little cliche but still relevant and
+// important to ponder and analyze. Have you seen either, if not
+// would you watch either movie?
+
+// ALSO, anytime I watch them, I much prefer the originals over
+// any remakes or remasters. Especially with Ghost in the Shell
+// There's 2 remakes, one just worsens visuals and effects, the other
+// is the scarlet johansen version, which isn't bad but it glosses
+// over a lot of the little details that make the original so special.
+
+// Anywho, I really enjoy watching them over n over every now and then.
+// I am curious on your thoughts if you have seen them!
+
+// ANYWHO, enjoy my assignment! I had a lot of fun with this one
+// [I mean cmon, trying to break stuff is always fun :) ]
+
+// Have a wonderful morning/day/evening! I hope you find a new reason to smile today!
 
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/sem.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
+
+#define THINKING 0
+#define HUNGRY 1
+#define EATING 2
+
 
 main(int argc, char *argv[]) {
-int i, sem_id;
-int N;                  // Holds the number of procs to generate
-int myID = 0;           // used to identify procs in sync
-int LoopCount = 3;     // Times each proc will "speak"
+  int i, sem_id;
+  int N = 5;                  // Holds the number of procs/sems to generate
+  int myID = 0;               // used to identify procs in sync
+  int semArray[N];          // used to hold sem's for chopsticks
+  char tabsNeeded[5] = "\t";  // used to hold tabs for each proc
+  char tabSpare[1] = "\t";    // spare tab for my sake
+  int state[n] =  {0, 0, 0, 0, 0}; // represents each philosphers state
 
-/*****  Get the command line argument for how many procs. Default of 5 ****/
-if (argc < 2) {
-  N = 5;
-} else if (argc == 2) {
-  N = atoi(argv[1]); 
 
-  // check N is in bounds
-  if (N > 26 || N < 1) {
-    printf(":( that's no good, try 1-26.\n");
-    return(0);
+
+  /******************** PREP BEFORE STARTING *********************/
+
+  /*****  Make a note of "who" is the first Process *****/
+  int firstID = getpid();
+
+  /***** Seed rand w/ time *****/
+  srand(time(0));	
+  
+  /***** Get Semaphores *****/
+  for (i = 0; i < N; i++) {
+    // ask os for sems
+    sem_id = semget (IPC_PRIVATE, 1, 0777);
+
+    // check if sems made
+    if (sem_id == -1) {
+      printf("%s","SemGet Failed.\n");
+      return (-1);
+    }
+
+    semArray[i] = sem_id;
   }
-}
+  
 
-/*****  Make a note of "who" is the first Process *****/
-int firstID = getpid();
-
-/*****  Ask OS for Sems *****/
-sem_id = semget (IPC_PRIVATE, N, 0777);
+  
 
 
-/*****  See if you got the request *****/
-if (sem_id == -1) {
-  printf("%s","SemGet Failed.\n");
-  return (-1);
-}
-
-/*****  Initialize your sems *****/
-semctl(sem_id, 0, SETVAL, 1);
-for (i = 1; i < N; i++) {
-  semctl(sem_id, i, SETVAL, 0);
-}
-
-
-/*************  Spawn all the Processes *********/
-for (i = 1; i < N; i++) {
-  if (fork() > 0) break; // send parent on to Body
-  myID++;
-}
-
-sleep(1);
-
-
-/*************  BODY  OF  PROGRAM     ***********/
-for (i = 0; i < LoopCount; i++) {
-  p(myID, sem_id); // wait for turn
-
-  // set char for printing
-  char myChar = 'A' + myID;
-
-  printf("%c:%d\n",myChar,getpid());
-  v((myID + 1) % N, sem_id); // notify next turn
-}
-
-sleep(1);
-
-if (firstID == getpid()) { // ONLY need original process to do this
-  // clean up
-  sleep(2);
-  if ((semctl(sem_id, 0, IPC_RMID, 0)) == -1) {
-    printf("%s", "Parent: ERROR in removing sem\n");
+  // initialize sems (initial val 1 = ready)
+  semArray[0] = sem_id;
+  for (i = 0; i < N; i++) {
+    semctl(sem_id, i, SETVAL, 1);
+    semArray[i+1] = i;
   }
-}
+j
 
-return(0);
+  /*****  Spawn all the Processes *****/
+  for (i = 1; i < N; i++) {
+    if (fork() > 0) break; // send parent on to Body
+    myID++;
+    strcat(tabsNeeded, tabSpare); // adds another tab
+  }
+
+  /******************** STARTING MAIN BODY *********************/
+
+  while (1) {
+  // as all great philosophers must do, THINK!
+    think_super_hard(); // waste time
+    printf("%s%d THINKING", myID, tabsNeeded);
+
+  // as even greater philosophers must do, HUNGER!
+    printf("%s%d HUNGRY", myID, tabsNeeded);
+    // try to pick up Left chopstick
+    int stickLeft = pick_up_chopstick(0, myID, semArray);
+    think_super_hard(); // waste time
+    
+    // try to pick up Right chopstick
+    int stickRight = pick_up_chopstick(1, myID, semArray);
+
+  // as the greatest philosophers must do, EAT!
+    printf("%s%d EATING", myID, tabsNeeded);
+    // put down Left
+    think_super_hard(); //waste time
+    put_down_chopstick(0, myID, semArray);
+    // put down Right
+    think_super_hard(); //waste time
+    put_down_chopstick(1, myID, semArray);
+     
+  }
+
+
+  /******************** ENDING MAIN BODY *********************/  
+
+  // clean up, ONLY need original process to do this
+  if (firstID == getpid()) {
+    sleep(2);
+    if ((semctl(sem_id, 0, IPC_RMID, 0)) == -1) {
+      printf("%s", "Parent: ERROR in removing sem\n");
+    }
+  }
+
+  return(0);
 }
 
 
@@ -103,4 +147,49 @@ v(int s, int sem_id) {
   sops.sem_op = 1;
   sops.sem_flg = 0;
   if((semop(sem_id, &sops, 1)) == -1) printf("%s","'V' error\n");
+}
+
+/***** Funcs for Bob's Killer Strats *****/
+think_super_hard(){
+  // to waste time, I have opted for the following strat
+  // use rand int to generate massive num, then triple for loop
+  // of adding a num for no reason
+
+  int howLong = rand() % 1000;
+  int i, dummy;
+
+  for (i = 0; i < howLong; i++) {
+    for (i = 0; i < howLong; i++) {
+      for (i = 0; i < howLong; i++) {
+        dummy = dummy + 1;
+      }
+    }
+  }
+
+}
+
+pick_up_chopstick(int side, int myID, int semArray[]){
+  // side: (0 = L, 1 = R)
+  // myID: (0-4)
+  // semArray[5]: holds each chopstick sem
+
+  int spotToCheck = (myID + side) % 5;
+
+  // check if safe
+  p(1, semArray[spotToCheck]);
+  // ENTERING CRITICAL ZONE
+  return (1);
+}
+
+put_down_chopstick(int side, int myID, int semArray[]){
+  // side: (0 = L, 1 = R)
+  // myID: (0-4)
+  // semArray[5]: holds each chopstick sem
+
+  int spotToCheck = (myID + side) % 5;
+
+  // EXITING CRITICAL ZONE
+  // signal and leave
+  v(0, semArray[spotToCheck]);
+  return (1);
 }
