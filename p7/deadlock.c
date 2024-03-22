@@ -43,7 +43,7 @@ main(int argc, char *argv[]) {
   int semArray[N];          // used to hold sem's for chopsticks
   char tabsNeeded[5] = "\t";  // used to hold tabs for each proc
   char tabSpare[1] = "\t";    // spare tab for my sake
-  int state[n] =  {0, 0, 0, 0, 0}; // represents each philosphers state
+  //int state[N] =  {0, 0, 0, 0, 0}; // represents each philosphers state
 
 
 
@@ -79,7 +79,7 @@ main(int argc, char *argv[]) {
     semctl(sem_id, i, SETVAL, 1);
     semArray[i+1] = i;
   }
-j
+ 
 
   /*****  Spawn all the Processes *****/
   for (i = 1; i < N; i++) {
@@ -93,10 +93,10 @@ j
   while (1) {
   // as all great philosophers must do, THINK!
     think_super_hard(); // waste time
-    printf("%s%d THINKING", myID, tabsNeeded);
+    printf("%s%d THINKING\n", tabsNeeded, myID);
 
   // as even greater philosophers must do, HUNGER!
-    printf("%s%d HUNGRY", myID, tabsNeeded);
+    printf("%s%d HUNGRY\n", tabsNeeded, myID);
     // try to pick up Left chopstick
     int stickLeft = pick_up_chopstick(0, myID, semArray);
     think_super_hard(); // waste time
@@ -105,7 +105,7 @@ j
     int stickRight = pick_up_chopstick(1, myID, semArray);
 
   // as the greatest philosophers must do, EAT!
-    printf("%s%d EATING", myID, tabsNeeded);
+    printf("%s%d EATING\n", tabsNeeded, myID);
     // put down Left
     think_super_hard(); //waste time
     put_down_chopstick(0, myID, semArray);
@@ -137,7 +137,7 @@ p(int s,int sem_id) {
   sops.sem_num = s;
   sops.sem_op = -1;
   sops.sem_flg = 0;
-  if((semop(sem_id, &sops, 1)) == -1) printf("%s", "'P' error\n");
+  semop(sem_id, &sops, 1);
 }
 
 v(int s, int sem_id) {
@@ -146,7 +146,7 @@ v(int s, int sem_id) {
   sops.sem_num = s;
   sops.sem_op = 1;
   sops.sem_flg = 0;
-  if((semop(sem_id, &sops, 1)) == -1) printf("%s","'V' error\n");
+  semop(sem_id, &sops, 1);
 }
 
 /***** Funcs for Bob's Killer Strats *****/
@@ -155,7 +155,7 @@ think_super_hard(){
   // use rand int to generate massive num, then triple for loop
   // of adding a num for no reason
 
-  int howLong = rand() % 1000;
+  int howLong = rand() % 90000000 + 1000;
   int i, dummy;
 
   for (i = 0; i < howLong; i++) {
