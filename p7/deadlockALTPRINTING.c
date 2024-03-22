@@ -158,9 +158,6 @@ think_super_hard(){
     for (j = 0; i < howLong; i++) {
       for (k = 0; i < howLong; i++) {
 	      dummy = dummy + 1;
-	      if (dummy % 1000 > 9900) {
-	        think_super_hard();
-        }
       }
     }
   }
