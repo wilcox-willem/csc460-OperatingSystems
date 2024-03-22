@@ -66,7 +66,7 @@ main(int argc, char *argv[]) {
         }
 
         /*****  Ask OS for Sems *****/
-        semID = semget (IPC_PRIVATE, 1, 0777);
+        semID = semget(IPC_PRIVATE, 1, 0777);
 
         /*****  See if you got the request *****/
         if (semID == -1) {
@@ -92,10 +92,9 @@ main(int argc, char *argv[]) {
   // Run the sim if passed in args
   if (runSim == 1) {
     // prep ID's
-    if (shmemID == -1 || semID == -1) {
-      shmemID = getShmemID();
-      semID = getSemID();
-    }
+    shmemID = getShmemID();
+    semID = getSemID();
+    
 
     // start forking
     /*********  Spawn all the Parents *********/
@@ -119,10 +118,10 @@ main(int argc, char *argv[]) {
 
     // core loop of sim
     for (i = 0; i < simCount; i++) {
-      printf("Dummy - %d and $%d\n", myID, myChange);
+      //printf("- %d - %d and $%d\n",semID,  myID, myChange);
 
       // wait for safe usage     
-      p(myID, semID);
+      p(0, semID);
 
       // WARNING: ENTERING THE CRITICAL ZONE
       temp_balance = *shmem; // get current balance
@@ -140,12 +139,12 @@ main(int argc, char *argv[]) {
 
       // WARNING: LEAVING THE CRITICAL ZONE
       // signal end of usage     
-      p(myID, semID);
+      v(0, semID);
 
     }
   }
 
-  printf("Done!\n");
+  //printf("Done!\n");
   return (0);
 }
 
@@ -197,10 +196,12 @@ int getSemID() {
     int semID = -1;
     
     if ((fp = fopen("./cryptodata","r")) != NULL) {
-      fscanf(fp,"%d\n%d", &shmemID, &semID);
+      fscanf(fp,"\n%d", &semID);
       fclose(fp);
     }
+	
 
+    //printf("SemID Found: %d",semID);
     return semID;
 }
 
