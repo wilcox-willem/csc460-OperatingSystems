@@ -94,7 +94,7 @@ main(int argc, char *argv[]) {
     // prep ID's
     shmemID = getShmemID();
     semID = getSemID();
-    
+    shmem = (int *) shmat(shmemID, NULL, SHM_RND); 
 
     // start forking
     /*********  Spawn all the Parents *********/
@@ -137,6 +137,8 @@ main(int argc, char *argv[]) {
         printf("\t\t%d: %d %d = %d\n", myID, old_balance, myChange, new_balance);
       }  
 
+	//printWallet(shmem);
+	
       // WARNING: LEAVING THE CRITICAL ZONE
       // signal end of usage     
       v(0, semID);
@@ -156,8 +158,11 @@ p(int s,int sem_id) {
   sops.sem_num = 0;
   sops.sem_op = -1;
   sops.sem_flg = 0;
-  if((semop(sem_id, &sops, 1)) == -1) 
-    printf("P error\n");
+
+  semop(sem_id,&sops, 1);
+  //if(semop(sem_id, &sops, 1) == -1){	
+  //  printf("P error\n");
+  //} 
 }
 
 v(int s, int sem_id) {
@@ -166,9 +171,14 @@ v(int s, int sem_id) {
   sops.sem_num = 0;
   sops.sem_op = 1;
   sops.sem_flg = 0;
-  if((semop(sem_id, &sops, 1)) == -1) 
-    printf("V error\n");
+
+
+  semop(sem_id,&sops, 1);
+  //if(semop(sem_id, &sops, 1) == -1){	
+  //  printf("P error\n");
+  //}
 }
+    
 
 
 /***** Crypto Functions *****/
