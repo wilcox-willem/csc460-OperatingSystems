@@ -130,18 +130,25 @@ main(int argc, char *argv[]) {
 
       *shmem = new_balance;
 
+      //if (myID < 16) {
+      //  printf("%d: %d + %d = %d\n", myID, old_balance, myChange, new_balance);
+      //}
+      //else {
+      //  printf("\t\t%d: %d %d = %d\n", myID, old_balance, myChange, new_balance);
+      //}  
+
+	
+      // WARNING: LEAVING THE CRITICAL ZONE
+      // signal end of usage     
+      v(0, semID);
+
+
       if (myID < 16) {
         printf("%d: %d + %d = %d\n", myID, old_balance, myChange, new_balance);
       }
       else {
         printf("\t\t%d: %d %d = %d\n", myID, old_balance, myChange, new_balance);
       }  
-
-	//printWallet(shmem);
-	
-      // WARNING: LEAVING THE CRITICAL ZONE
-      // signal end of usage     
-      v(0, semID);
 
     }
   }
