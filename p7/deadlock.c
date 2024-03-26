@@ -26,6 +26,7 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/sem.h>
+#include <sys/shm.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -37,13 +38,14 @@
 
 
 main(int argc, char *argv[]) {
-  int i, sem_id;
+  int i, semID, shmemID, shmemArray;
   int N = 5;                  // Holds the number of procs/sems to generate
   int myID = 0;               // used to identify procs in sync
-  int semArray[N];          // used to hold sem's for chopsticks
+  int mySticks[2] = {0,0};    // used to track sticks held (0 = L, 1 = R)
+  int semArray[N];            // used to hold sem's for chopstick access
   char tabsNeeded[5] = "\t";  // used to hold tabs for each proc
   char tabSpare[1] = "\t";    // spare tab for my sake
-  //int state[N] =  {0, 0, 0, 0, 0}; // represents each philosphers state
+  //int state[N];               // represents each philosphers state
 
 
 
@@ -54,29 +56,50 @@ main(int argc, char *argv[]) {
 
   /***** Seed rand w/ time *****/
   srand(time(0));	
+
+  // initialize shmem
+  shmemID =  shmget(IPC_PRIVATE, 5*sizeof(int), 0770);
+  if (shmemID != -1) {
+    shmemArray = (int *) shmat(shmemID, NULL, SHM_RND);
+  }
+  else {
+    printf("shmem error\n");
+    return (1);
+  }
+
+
   
   /***** Get Semaphores *****/
   for (i = 0; i < N; i++) {
     // ask os for sems
-    sem_id = semget (IPC_PRIVATE, 1, 0777);
+    semID = semget (IPC_PRIVATE, 1, 0777);
 
     // check if sems made
-    if (sem_id == -1) {
+    if (semID == -1) {
       printf("%s","SemGet Failed.\n");
       return (-1);
     }
 
-    semArray[i] = sem_id;
+    semArray[i] = semID;
+    shmemArray[i] = 1;
   }
   
+  // initialize shmem
+  shmemID =  shmget(IPC_PRIVATE, 5*sizeof(int), 0770);
+  if (shmemID != -1) {
+    shmemArray = (int *) shmat(shmemID, NULL, SHM_RND);
+  }
+  else {
+    printf("shmem error\n");
+    return (1);
+  }
 
-  
 
 
   // initialize sems (initial val 1 = ready)
-  semArray[0] = sem_id;
+  semArray[0] = semID;
   for (i = 0; i < N; i++) {
-    semctl(sem_id, i, SETVAL, 1);
+    semctl(semID, i, SETVAL, 1);
     semArray[i+1] = i;
   }
  
@@ -93,25 +116,33 @@ main(int argc, char *argv[]) {
   while (1) {
   // as all great philosophers must do, THINK!
     think_super_hard(); // waste time
-    printf("%s%d THINKING\n", tabsNeeded, myID);
-
+    if (mySticks[0] == 0 && mySticks[1] == 0) {
+      printf("%s%d THINKING\n", tabsNeeded, myID);
+    }
   // as even greater philosophers must do, HUNGER!
-    printf("%s%d HUNGRY\n", tabsNeeded, myID);
+    if (mySticks[0] == 1 || mySticks[1] == 1) {
+      printf("%s%d HUNGRY\n", tabsNeeded, myID);
+    }    
+
     // try to pick up Left chopstick
-    int stickLeft = pick_up_chopstick(0, myID, semArray);
+    pick_up_chopstick(0, myID, semArray, shmemArray, mySticks);
     think_super_hard(); // waste time
     
     // try to pick up Right chopstick
-    int stickRight = pick_up_chopstick(1, myID, semArray);
+    pick_up_chopstick(1, myID, semArray, shmemArray, mySticks);
 
   // as the greatest philosophers must do, EAT!
-    printf("%s%d EATING\n", tabsNeeded, myID);
+    if (mySticks[0] == 1 && mySticks[1] == 1) {
+      printf("%s%d EATING\n", tabsNeeded, myID);
+    }
+
     // put down Left
     think_super_hard(); //waste time
-    put_down_chopstick(0, myID, semArray);
+    put_down_chopstick(0, myID, semArray, shmemArray, mySticks);
+
     // put down Right
     think_super_hard(); //waste time
-    put_down_chopstick(1, myID, semArray);
+    put_down_chopstick(1, myID, semArray, shmemArray, mySticks);
      
   }
 
@@ -121,7 +152,7 @@ main(int argc, char *argv[]) {
   // clean up, ONLY need original process to do this
   if (firstID == getpid()) {
     sleep(2);
-    if ((semctl(sem_id, 0, IPC_RMID, 0)) == -1) {
+    if ((semctl(semID, 0, IPC_RMID, 0)) == -1) {
       printf("%s", "Parent: ERROR in removing sem\n");
     }
   }
@@ -131,22 +162,22 @@ main(int argc, char *argv[]) {
 
 
 /***** Semaphore Functions *****/
-p(int s,int sem_id) {
+p(int s,int semID) {
   struct sembuf sops;
 
   sops.sem_num = s;
   sops.sem_op = -1;
   sops.sem_flg = 0;
-  semop(sem_id, &sops, 1);
+  semop(semID, &sops, 1);
 }
 
-v(int s, int sem_id) {
+v(int s, int semID) {
   struct sembuf sops;
 
   sops.sem_num = s;
   sops.sem_op = 1;
   sops.sem_flg = 0;
-  semop(sem_id, &sops, 1);
+  semop(semID, &sops, 1);
 }
 
 /***** Funcs for Bob's Killer Strats *****/
@@ -155,12 +186,15 @@ think_super_hard(){
   // use rand int to generate massive num, then triple for loop
   // of adding a num for no reason
 
+  /***** Seed rand w/ time *****/
+  srand(time(0));	
+
   int howLong = rand() % 90000000 + 1000;
-  int i, dummy;
+  int i, j, k, dummy;
 
   for (i = 0; i < howLong; i++) {
-    for (i = 0; i < howLong; i++) {
-      for (i = 0; i < howLong; i++) {
+    for (j = 0; i < howLong; i++) {
+      for (k = 0; i < howLong; i++) {
         dummy = dummy + 1;
       }
     }
@@ -168,7 +202,7 @@ think_super_hard(){
 
 }
 
-pick_up_chopstick(int side, int myID, int semArray[]){
+pick_up_chopstick(int side, int myID, int semArray[], int shmemArray[], int mySticks[]){
   // side: (0 = L, 1 = R)
   // myID: (0-4)
   // semArray[5]: holds each chopstick sem
@@ -178,18 +212,34 @@ pick_up_chopstick(int side, int myID, int semArray[]){
   // check if safe
   p(1, semArray[spotToCheck]);
   // ENTERING CRITICAL ZONE
-  return (1);
+
+  if (mySticks[side] == 0 && shmemArray[spotToCheck] == 1) {
+    shmemArray[spotToCheck] += 1;
+    mySticks[side] += 1;
+  }
+
+  // EXITING CRITICAL ZONE
+  // signal and leave
+  v(0, semArray[spotToCheck]);
 }
 
-put_down_chopstick(int side, int myID, int semArray[]){
+put_down_chopstick(int side, int myID, int semArray[], int shmemArray[], int mySticks[]){
   // side: (0 = L, 1 = R)
   // myID: (0-4)
   // semArray[5]: holds each chopstick sem
 
   int spotToCheck = (myID + side) % 5;
 
+  // check if safe
+  p(1, semArray[spotToCheck]);
+  // ENTERING CRITICAL ZONE
+
+  if (mySticks[side] == 1 && shmemArray[spotToCheck] == 0) {
+    shmemArray[spotToCheck] -= 1;
+    mySticks[side] -= 1;
+  }
+
   // EXITING CRITICAL ZONE
   // signal and leave
   v(0, semArray[spotToCheck]);
-  return (1);
 }
