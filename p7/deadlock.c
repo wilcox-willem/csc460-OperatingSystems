@@ -38,7 +38,8 @@
 
 
 main(int argc, char *argv[]) {
-  int i, semID, shmemID, shmemArray;
+  int i, semID, shmemID;
+  int *shmemArray;
   int N = 5;                  // Holds the number of procs/sems to generate
   int myID = 0;               // used to identify procs in sync
   int mySticks[2] = {0,0};    // used to track sticks held (0 = L, 1 = R)
@@ -96,11 +97,11 @@ main(int argc, char *argv[]) {
 
 
 
-  // initialize sems (initial val 1 = ready)
-  semArray[0] = semID;
+  // initialize sems/arrays (initial val 1 = ready)
   for (i = 0; i < N; i++) {
     semctl(semID, i, SETVAL, 1);
-    semArray[i+1] = i;
+    semArray[i] = i;
+    shmemArray[i] = 1;
   }
  
 
@@ -220,7 +221,7 @@ pick_up_chopstick(int side, int myID, int semArray[], int shmemArray[], int mySt
 
   // EXITING CRITICAL ZONE
   // signal and leave
-  v(0, semArray[spotToCheck]);
+  v(1, semArray[spotToCheck]);
 }
 
 put_down_chopstick(int side, int myID, int semArray[], int shmemArray[], int mySticks[]){
@@ -241,5 +242,5 @@ put_down_chopstick(int side, int myID, int semArray[], int shmemArray[], int myS
 
   // EXITING CRITICAL ZONE
   // signal and leave
-  v(0, semArray[spotToCheck]);
+  v(1, semArray[spotToCheck]);
 }
