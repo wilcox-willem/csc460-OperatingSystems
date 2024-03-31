@@ -177,7 +177,7 @@ main(int argc, char *argv[]) {
     int cleanUpReady = 0;
     int timeWaited = 0;
 
-    while (cleanUpReady != 1 || timeWaited < 15) {
+    while (cleanUpReady == 0 && timeWaited < 20) {
       cleanUpReady = 1;
       
       for (i = 0; i < N; i++) {
@@ -197,17 +197,14 @@ main(int argc, char *argv[]) {
     
 
     // clean up, shmem
-    if (shmdt(shmemArray_sticks) == -1) 
-      printf("shmgm: ERROR in detaching.\n");
-
-    if ((shmctl(shmemID_sticks, IPC_RMID, NULL)) == -1)
-      printf("ERROR removing shmem.\n");
 
     if (shmdt(shmem_states) == -1) 
       printf("shmgm: ERROR in detaching.\n");
 
     if ((shmctl(shmemID_states, IPC_RMID, NULL)) == -1)
       printf("ERROR removing shmem.\n");
+
+    printf("Done!");
   }
 
   return(0);
