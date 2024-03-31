@@ -223,7 +223,7 @@ main(int argc, char *argv[]) {
 think() {
   // sleep 4-10 sec
 
-  sleepTimer = (rand() % 7) + 4;
+  int sleepTimer = (rand() % 7) + 4;
 
   while (sleepTimer > 0) {
     sleep(1);
@@ -234,7 +234,7 @@ think() {
 eat() {
   // sleep 1-3 sec
   
-  sleepTimer = (rand() % 3) + 1;
+  int sleepTimer = (rand() % 3) + 1;
 
   while (sleepTimer > 0) {
     sleep(1);
@@ -258,7 +258,7 @@ test(int myID, int semID, int shmemArray_states[]) {
 pick_up_chopsticks(int myID, int semID, int shmemArray_states[]) {
   p(MUTEX, semID);                  // enter crit sect
   shmemArray_states[myID] = HUNGRY; // update state
-  test(myID);                       // try to get chops
+  test(myID, semID, shmemArray_states); // try to get chops
   v(MUTEX, semID);                  // exit crit sect
   p(myID, semID);                   // block if chops not acquired
 }
@@ -271,8 +271,8 @@ put_down_chopsticks(int myID, int semID, int shmemArray_states[]) {
 
   p(MUTEX, semID);                    // enter crit sect
   shmemArray_states[myID] = THINKING; // update state
-  test(spotLeft);                     // check if neigbor can eat
-  test(spotRight);                    // check if other neigbor can eat
+  test(spotLeft, semID, shmemArray_states);  // check if neigbor can eat
+  test(spotRight, semID, shmemArray_states); // check if other neigbor can eat
   v(MUTEX, semID);                    // exit crit sect
   p(myID, semID);                     // block if chops not acquired
 }
