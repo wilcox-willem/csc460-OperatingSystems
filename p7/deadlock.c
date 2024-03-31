@@ -212,17 +212,17 @@ pick_up_chopstick(int side, int myID, int semArray[], int shmemArray[], int mySt
   int spotToCheck = (myID + side) % 5;
 
   // check if safe
-  p(1, semArray[spotToCheck]);
+  p(0, semArray[spotToCheck]);
   // ENTERING CRITICAL ZONE
 
   if (mySticks[side] == 0 && shmemArray[spotToCheck] == 1) {
-    shmemArray[spotToCheck] += 1;
+    shmemArray[spotToCheck] -= 1;
     mySticks[side] += 1;
   }
 
   // EXITING CRITICAL ZONE
   // signal and leave
-  v(1, semArray[spotToCheck]);
+  v(0, semArray[spotToCheck]);
 }
 
 put_down_chopstick(int side, int myID, int semArray[], int shmemArray[], int mySticks[]){
@@ -233,15 +233,15 @@ put_down_chopstick(int side, int myID, int semArray[], int shmemArray[], int myS
   int spotToCheck = (myID + side) % 5;
 
   // check if safe
-  p(1, semArray[spotToCheck]);
+  p(0, semArray[spotToCheck]);
   // ENTERING CRITICAL ZONE
 
   if (mySticks[side] == 1 && shmemArray[spotToCheck] == 0) {
-    shmemArray[spotToCheck] -= 1;
+    shmemArray[spotToCheck] += 1;
     mySticks[side] -= 1;
   }
 
   // EXITING CRITICAL ZONE
   // signal and leave
-  v(1, semArray[spotToCheck]);
+  v(0, semArray[spotToCheck]);
 }
