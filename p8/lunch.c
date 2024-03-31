@@ -51,7 +51,7 @@
 #define THINKING 0
 #define HUNGRY 1
 #define EATING 2
-#define DIE -1
+#define DIE 3
 
 #define LEFT 0
 #define RIGHT 1
@@ -103,10 +103,8 @@ main(int argc, char *argv[]) {
  
 
   /*****  Spawn all the Processes *****/
-  int firstFork = fork();
-
   if (fork() == 0) { // child starts forking
-    for (i = 0; i < N; i++) {
+    for (i = 1; i < N; i++) {
       if (fork() > 0) break; // send parent on to Body
       myID++;
     }
@@ -115,7 +113,7 @@ main(int argc, char *argv[]) {
   }
 
   /***** Seed rand w/ ID *****/
-  srand(myID);
+  srand(getpid());
 	
   /******************** STARTING MAIN BODY *********************/
 
@@ -124,7 +122,7 @@ main(int argc, char *argv[]) {
     
     int theTime = shmem_states[N];
 
-    while (theTime <= 60) {
+    while (theTime < 60) {
     // as all great philosophers must do, ~~ THINK! ~~
       think();
 
@@ -150,7 +148,7 @@ main(int argc, char *argv[]) {
     int timePassed = 0;
     char printStr[50] = " "; 
 
-    for (timePassed = 0; timePassed <= 60; timePassed++) {
+    for (timePassed = 1; timePassed <= 60; timePassed++) {
       shmem_states[N] = timePassed;
       
       printf("%d. ", timePassed);
@@ -166,6 +164,7 @@ main(int argc, char *argv[]) {
       sleep(1);
 
     }
+    sleep(5);
   }
 
   /******************** ENDING MAIN BODY *********************/  
@@ -177,7 +176,7 @@ main(int argc, char *argv[]) {
     int cleanUpReady = 0;
     int timeWaited = 0;
 
-    while (cleanUpReady == 0 && timeWaited < 20) {
+    while (cleanUpReady == 0 && timeWaited < 6) {
       cleanUpReady = 1;
       
       for (i = 0; i < N; i++) {
@@ -188,7 +187,7 @@ main(int argc, char *argv[]) {
 
       timeWaited++;
 
-      sleep(1);
+      sleep(10);
     }
   
     // clean up, sems
@@ -204,7 +203,7 @@ main(int argc, char *argv[]) {
     if ((shmctl(shmemID_states, IPC_RMID, NULL)) == -1)
       printf("ERROR removing shmem.\n");
 
-    printf("Done!");
+    printf("\nDone!\n");
   }
 
   return(0);
@@ -266,7 +265,6 @@ put_down_chopsticks(int myID, int semID, int shmem_states[]) {
   test(spotLeft, semID, shmem_states);  // check if neigbor can eat
   test(spotRight, semID, shmem_states); // check if other neigbor can eat
   v(MUTEX, semID);                    // exit crit sect
-  p(myID, semID);                     // block if chops not acquired
 }
 
 
