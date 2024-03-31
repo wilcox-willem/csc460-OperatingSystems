@@ -174,7 +174,7 @@ main(int argc, char *argv[]) {
       shmemArray_states[N] = masterTime;
       
       printf("%d. ", masterTime);
-      for (loopVal = ; loopVal < N; loopVal++){
+      for (loopVal = 0; loopVal < N; loopVal++){
         if (shmemArray_states[loopVal] == THINKING) printf("thinking  ");
         else if (shmemArray_states[loopVal] == HUNGRY) printf("hungry    ");
         else if (shmemArray_states[loopVal] == EATING) printf("eating    ");
@@ -217,13 +217,13 @@ main(int argc, char *argv[]) {
     
 
     // clean up, shmem
-    if (shmdt(shmemID_sticks) == -1) 
+    if (shmdt(shmemArray_sticks) == -1) 
       printf("shmgm: ERROR in detaching.\n");
 
     if ((shmctl(shmemID_sticks, IPC_RMID, NULL)) == -1)
       printf("ERROR removing shmem.\n");
 
-    if (shmdt(shmemID_states) == -1) 
+    if (shmdt(shmemArray_states) == -1) 
       printf("shmgm: ERROR in detaching.\n");
 
     if ((shmctl(shmemID_states, IPC_RMID, NULL)) == -1)
