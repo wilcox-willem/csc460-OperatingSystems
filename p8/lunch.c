@@ -137,11 +137,11 @@ main(int argc, char *argv[]) {
       else if (mySticks[0] == 1 || mySticks[1] == 1) {
         shmemArray_states[myID] = HUNGRY;
           
-        if (myStick[LEFT] == 0) { 
+        if (mySticks[LEFT] == 0) { 
           // try to pick up Left chopstick
           pick_up_chopstick(LEFT, myID, semID, shmemArray_sticks, mySticks);
         }
-        if (myStick[RIGHT] == 0) { 
+        if (mySticks[RIGHT] == 0) { 
           // try to pick up Right chopstick
           pick_up_chopstick(RIGHT, myID, semID, shmemArray_sticks, mySticks);
         }
@@ -214,12 +214,19 @@ main(int argc, char *argv[]) {
     // clean up, sems
     if ((semctl(semID, 0, IPC_RMID, 0)) == -1)
       printf("%s", "Parent: ERROR in removing sem\n");
+    
 
     // clean up, shmem
-    if (shmdt(shmemID_sticks) == -1 || shmdt(shmemID_states) == -1 ) 
+    if (shmdt(shmemID_sticks) == -1) 
       printf("shmgm: ERROR in detaching.\n");
 
-    if ((shmctl(shmemID_sticks, IPC_RMID, NULL)) == -1 || (shmctl(shmemID_states, IPC_RMID, NULL)) == -1)
+    if ((shmctl(shmemID_sticks, IPC_RMID, NULL)) == -1)
+      printf("ERROR removing shmem.\n");
+
+    if (shmdt(shmemID_states) == -1) 
+      printf("shmgm: ERROR in detaching.\n");
+
+    if ((shmctl(shmemID_states, IPC_RMID, NULL)) == -1)
       printf("ERROR removing shmem.\n");
   }
 
@@ -271,7 +278,7 @@ p(int s,int semID) {
   sops.sem_num = s;
   sops.sem_op = -1;
   sops.sem_flg = 0;
-  if((semop(sem_id, &sops, 1)) == -1) printf("%s", "'P' error\n");
+  if((semop(semID, &sops, 1)) == -1) printf("%s", "'P' error\n");
 }
 
 
@@ -281,5 +288,5 @@ v(int s, int semID) {
   sops.sem_num = s;
   sops.sem_op = 1;
   sops.sem_flg = 0;
-  if((semop(sem_id, &sops, 1)) == -1) printf("%s", "'V' error\n");
+  if((semop(semID, &sops, 1)) == -1) printf("%s", "'V' error\n");
 }
