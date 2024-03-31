@@ -61,10 +61,9 @@
 
 main(int argc, char *argv[]) {
   int i, semID, shmemID_sticks, shmemID_states;
-  int *shmemArray_sticks, *shmemArray_states;
+  int *shmem_states;
   int N = 5;                  // Holds the number of procs/sems to generate
   int myID = 0;               // used to identify procs in sync
-  int mySticks[2] = {0,0};    // used to track sticks held (0 = L, 1 = R) Q
   int state[N];               // represents each philosphers state
 
 
@@ -75,14 +74,11 @@ main(int argc, char *argv[]) {
   int firstID = getpid();
 
   // initialize shmem
-  shmemID_sticks =  shmget(IPC_PRIVATE, N*sizeof(int), 0770); 
-
   shmemID_states =  shmget(IPC_PRIVATE, (N+1)*sizeof(int), 0770);
-  if (shmemID_sticks != -1 && shmemID_states != -1) {
-    shmemArray_sticks = (int *) shmat(shmemID_sticks, NULL, SHM_RND);
-    shmemArray_states = (int *) shmat(shmemID_states, NULL, SHM_RND);
-  }
-  else {
+
+  if (shmemID_states != -1) {
+    shmem_states = (int *) shmat(shmemID_states, NULL, SHM_RND);
+  } else {
     printf("shmem error\n");
     return (1);
   }
@@ -93,14 +89,13 @@ main(int argc, char *argv[]) {
   // check if sem array made
   if (semID == -1) {
     printf("%s","SemGet Failed.\n");
-    return (-1);
+    return (1);
   }
 
 
   // initialize sems/arrays (initial val 1 = ready)
   for (i = 0; i < N; i++) {
     semctl(semID, i, SETVAL, 1);
-    shmemArray_sticks[i] = 1;
   }
 
   // set mutex
@@ -116,7 +111,7 @@ main(int argc, char *argv[]) {
       myID++;
     }
   } else {
-    myID = N;
+    myID = -1;
   }
 
   /***** Seed rand w/ ID *****/
@@ -127,43 +122,43 @@ main(int argc, char *argv[]) {
   if (getpid() != firstID) {
     /***** The Philosophers Loop *****/
     
-    int theTime = shmemArray_states[N];
+    int theTime = shmem_states[N];
 
     while (theTime <= 60) {
     // as all great philosophers must do, ~~ THINK! ~~
       think();
 
     // as even greater philosophers must do, ~~ HUNGER! ~~
-      pick_up_chopsticks(myID, semID, shmemArray_states);
+      pick_up_chopsticks(myID, semID, shmem_states);
 
     // as the greatest philosophers must do, ~~ EAT! ~~
       eat();
-      put_down_chopsticks(myID, semID, shmemArray_states);
+      put_down_chopsticks(myID, semID, shmem_states);
       
     // update time 
-      theTime = shmemArray_states[N];
+      theTime = shmem_states[N];
     }
 
     // now that main loop is over, die!
-    shmemArray_states[myID] = DIE;
+    shmem_states[myID] = DIE;
     return (0);
 
   } else {
     /****** the management loop ******/
 
     int loopVal = 0;
-    int masterTime = 0;
+    int timePassed = 0;
     char printStr[50] = " "; 
 
-    for (masterTime = 0; masterTime <= 60; masterTime++) {
-      shmemArray_states[N] = masterTime;
+    for (timePassed = 0; timePassed <= 60; timePassed++) {
+      shmem_states[N] = timePassed;
       
-      printf("%d. ", masterTime);
+      printf("%d. ", timePassed);
       for (loopVal = 0; loopVal < N; loopVal++){
-        if (shmemArray_states[loopVal] == THINKING) printf("thinking  ");
-        else if (shmemArray_states[loopVal] == HUNGRY) printf("hungry    ");
-        else if (shmemArray_states[loopVal] == EATING) printf("eating    ");
-        else if (shmemArray_states[loopVal] == DIE) printf("dead      ");
+        if (shmem_states[loopVal] == THINKING) printf("thinking  ");
+        else if (shmem_states[loopVal] == HUNGRY) printf("hungry    ");
+        else if (shmem_states[loopVal] == EATING) printf("eating    ");
+        else if (shmem_states[loopVal] == DIE) printf("dead      ");
         else printf("error     ");
       }
       printf("\n");
@@ -186,7 +181,7 @@ main(int argc, char *argv[]) {
       cleanUpReady = 1;
       
       for (i = 0; i < N; i++) {
-        if (shmemArray_states[i] != DIE) {
+        if (shmem_states[i] != DIE) {
           cleanUpReady = 0;
         }
       }
@@ -208,7 +203,7 @@ main(int argc, char *argv[]) {
     if ((shmctl(shmemID_sticks, IPC_RMID, NULL)) == -1)
       printf("ERROR removing shmem.\n");
 
-    if (shmdt(shmemArray_states) == -1) 
+    if (shmdt(shmem_states) == -1) 
       printf("shmgm: ERROR in detaching.\n");
 
     if ((shmctl(shmemID_states, IPC_RMID, NULL)) == -1)
@@ -242,37 +237,37 @@ eat() {
   }
 }
 
-test(int myID, int semID, int shmemArray_states[]) {
+test(int myID, int semID, int shmem_states[]) {
   int spotLeft = (myID + 4) % 5;
   int spotRight = (myID + 1) % 5;
 
-  if (shmemArray_states[myID] == HUNGRY && 
-      shmemArray_states[spotLeft] != EATING && 
-      shmemArray_states[spotRight] != EATING) {
-    shmemArray_states[myID] = EATING;
+  if (shmem_states[myID] == HUNGRY && 
+      shmem_states[spotLeft] != EATING && 
+      shmem_states[spotRight] != EATING) {
+    shmem_states[myID] = EATING;
     v(myID, semID);
   }
 
 }
 
-pick_up_chopsticks(int myID, int semID, int shmemArray_states[]) {
+pick_up_chopsticks(int myID, int semID, int shmem_states[]) {
   p(MUTEX, semID);                  // enter crit sect
-  shmemArray_states[myID] = HUNGRY; // update state
-  test(myID, semID, shmemArray_states); // try to get chops
+  shmem_states[myID] = HUNGRY;      // update state
+  test(myID, semID, shmem_states);  // try to get chops
   v(MUTEX, semID);                  // exit crit sect
   p(myID, semID);                   // block if chops not acquired
 }
 
 
 
-put_down_chopsticks(int myID, int semID, int shmemArray_states[]) {
+put_down_chopsticks(int myID, int semID, int shmem_states[]) {
   int spotLeft = (myID + 4) % 5;
   int spotRight = (myID + 1) % 5;
 
   p(MUTEX, semID);                    // enter crit sect
-  shmemArray_states[myID] = THINKING; // update state
-  test(spotLeft, semID, shmemArray_states);  // check if neigbor can eat
-  test(spotRight, semID, shmemArray_states); // check if other neigbor can eat
+  shmem_states[myID] = THINKING;      // update state
+  test(spotLeft, semID, shmem_states);  // check if neigbor can eat
+  test(spotRight, semID, shmem_states); // check if other neigbor can eat
   v(MUTEX, semID);                    // exit crit sect
   p(myID, semID);                     // block if chops not acquired
 }
