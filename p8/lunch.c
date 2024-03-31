@@ -125,37 +125,20 @@ main(int argc, char *argv[]) {
   /******************** STARTING MAIN BODY *********************/
 
   if (getpid() != firstID) {
+    /***** The Philosophers Loop *****/
+    
     int theTime = shmemArray_states[N];
 
-    while (theTime < 60) {
-    // as all great philosophers must do, THINK!
-      if (mySticks[0] == 0 && mySticks[1] == 0) {
-        shmemArray_states[myID] = THINKING;
-      }
+    while (theTime <= 60) {
+    // as all great philosophers must do, ~~ THINK! ~~
+      think();
 
-    // as even greater philosophers must do, HUNGER!
-      else if (mySticks[0] == 1 || mySticks[1] == 1) {
-        shmemArray_states[myID] = HUNGRY;
-          
-        if (mySticks[LEFT] == 0) { 
-          // try to pick up Left chopstick
-          pick_up_chopstick(LEFT, myID, semID, shmemArray_sticks, mySticks);
-        }
-        if (mySticks[RIGHT] == 0) { 
-          // try to pick up Right chopstick
-          pick_up_chopstick(RIGHT, myID, semID, shmemArray_sticks, mySticks);
-        }
-      }
+    // as even greater philosophers must do, ~~ HUNGER! ~~
+      pick_up_chopsticks(myID, semID, shmemArray_states);
 
-    // as the greatest philosophers must do, EAT!
-      if (mySticks[0] == 1 && mySticks[1] == 1) {
-        shmemArray_states[myID] = EATING;
-        // put down Left
-        put_down_chopstick(LEFT, myID, semID, shmemArray_sticks, mySticks);
-
-        // put down Right
-        put_down_chopstick(RIGHT, myID, semID, shmemArray_sticks, mySticks);
-      }
+    // as the greatest philosophers must do, ~~ EAT! ~~
+      eat();
+      put_down_chopsticks(myID, semID, shmemArray_states);
       
     // update time 
       theTime = shmemArray_states[N];
@@ -163,8 +146,10 @@ main(int argc, char *argv[]) {
 
     // now that main loop is over, die!
     shmemArray_states[myID] = DIE;
+    return (0);
+
   } else {
-    /****** firstID process keeps track of time and prints states ******/
+    /****** the management loop ******/
 
     int loopVal = 0;
     int masterTime = 0;
@@ -234,7 +219,7 @@ main(int argc, char *argv[]) {
 }
 
 /***** Funcs for C's Lvly *****/
-pick_up_chopstick(int side, int myID, int semID, int shmemArray_sticks[], int mySticks[]){
+pick_up_chopstick(j){
   int spotToCheck = (myID + side) % 5;
 
   // check if safe
@@ -266,6 +251,64 @@ put_down_chopstick(int side, int myID, int semID, int shmemArray_sticks[], int m
   // EXITING CRITICAL ZONE
   // signal and leave
   v(spotToCheck, semID);
+}
+
+
+think() {
+  // sleep 4-10 sec
+
+  sleepTimer = (rand() % 7) + 4;
+
+  while (sleepTimer > 0) {
+    sleep(1);
+    sleepTimer -= 1;
+  }
+}
+
+eat() {
+  // sleep 1-3 sec
+  
+  sleepTimer = (rand() % 3) + 1;
+
+  while (sleepTimer > 0) {
+    sleep(1);
+    sleepTimer -= 1;
+  }
+}
+
+test(int myID, int semID, int shmemArray_states[]) {
+  int spotLeft = (myID + 4) % 5;
+  int spotRight = (myID + 1) % 5;
+
+  if (shmemArray_states[myID] == HUNGRY && 
+      shmemArray_states[spotLeft] != EATING && 
+      shmemArray_states[spotRight] != EATING) {
+    shmemArray_states[myID] = EATING;
+    v(myID, semID);
+  }
+
+}
+
+pick_up_chopsticks(int myID, int semID, int shmemArray_states[]) {
+  p(MUTEX, semID);                  // enter crit sect
+  shmemArray_states[myID] = HUNGRY; // update state
+  test(myID);                       // try to get chops
+  v(MUTEX, semID);                  // exit crit sect
+  p(myID, semID);                   // block if chops not acquired
+}
+
+
+
+put_down_chopsticks(int myID, int semID, int shmemArray_states[]) {
+  int spotLeft = (myID + 4) % 5;
+  int spotRight = (myID + 1) % 5;
+
+  p(MUTEX, semID);                    // enter crit sect
+  shmemArray_states[myID] = THINKING; // update state
+  test(spotLeft);                     // check if neigbor can eat
+  test(spotRight);                    // check if other neigbor can eat
+  v(MUTEX, semID);                    // exit crit sect
+  p(myID, semID);                     // block if chops not acquired
 }
 
 
