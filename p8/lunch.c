@@ -219,40 +219,6 @@ main(int argc, char *argv[]) {
 }
 
 /***** Funcs for C's Lvly *****/
-pick_up_chopstick(j){
-  int spotToCheck = (myID + side) % 5;
-
-  // check if safe
-  p(spotToCheck, semID);
-  // ENTERING CRITICAL ZONE
-
-  if (mySticks[side] == 0 && shmemArray_sticks[spotToCheck] == 1) {
-    shmemArray_sticks[spotToCheck] -= 1;
-    mySticks[side] += 1;
-  }
-
-  // EXITING CRITICAL ZONE
-  // signal and leave
-  v(spotToCheck, semID);
-}
-
-put_down_chopstick(int side, int myID, int semID, int shmemArray_sticks[], int mySticks[]){
-  int spotToCheck = (myID + side) % 5;
-
-  // check if safe
-  p(spotToCheck, semID);
-  // ENTERING CRITICAL ZONE
-
-  if (mySticks[side] == 1 && shmemArray_sticks[spotToCheck] == 0) {
-    shmemArray_sticks[spotToCheck] += 1;
-    mySticks[side] -= 1;
-  }
-
-  // EXITING CRITICAL ZONE
-  // signal and leave
-  v(spotToCheck, semID);
-}
-
 
 think() {
   // sleep 4-10 sec
